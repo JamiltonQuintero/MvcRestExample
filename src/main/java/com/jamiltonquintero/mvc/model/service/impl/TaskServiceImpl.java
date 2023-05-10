@@ -41,14 +41,21 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public TaskDto getById(Long id) {
 
+        var task = getTask(id);
+
+        return taskDtoMapper.toDto(task);
+
+    }
+
+    private Task getTask(Long id) {
+
         var optionalTask = taskRepository.findById(id);
 
         if (optionalTask.isEmpty()){
             throw new TaskException(HttpStatus.NOT_FOUND, String.format(TaskConstant.TASK_NOT_FOUND_MESSAGE_ERROR, id));
         }
 
-       return taskDtoMapper.toDto(optionalTask.get());
-
+        return optionalTask.get();
     }
 
     @Override
@@ -69,18 +76,14 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public TaskDto update(TaskRequest request, Long id) {
 
-        var optionalTask = taskRepository.findById(id);
+        var taskToUpdate = getTask(id);
 
-        if (optionalTask.isEmpty()){
-            throw new TaskException(HttpStatus.NOT_FOUND, String.format(TaskConstant.TASK_NOT_FOUND_MESSAGE_ERROR, id));
-        }
-
-        var taskToUpdate = optionalTask.get();
         setValuesToUpdate(request,taskToUpdate);
 
         var updatedTask = taskRepository.save(taskToUpdate);
 
         return taskDtoMapper.toDto(updatedTask);
+
     }
 
     private void setValuesToUpdate(TaskRequest request, Task currentTask){
